@@ -1,0 +1,12 @@
+import express from 'express';
+import { getMonitoresDisponibles, agendarMonitoria, getCitasEstudiante, cancelarMonitoria, createAvailability } from '../controllers/monitoriaController.js';
+
+const router = express.Router();
+
+router.get('/disponibles', getMonitoresDisponibles);
+router.post('/agendar', agendarMonitoria);
+router.get('/estudiante/:id', getCitasEstudiante);
+router.delete('/cancelar/:id', cancelarMonitoria);
+router.post('/disponibilidad', createAvailability);
+
+export default router;
