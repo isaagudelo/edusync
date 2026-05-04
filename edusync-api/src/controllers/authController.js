@@ -3,13 +3,16 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 export const register = async (req, res) => {
-    const { nombre, correo, contrasena, tipo_usuario, programa } = req.body;
+    const { nombre, apellidos, correo, contrasena, tipo_usuario, programa } = req.body;
     try {
+        if (!apellidos) {
+            return res.status(400).json({ error: 'El campo apellidos es obligatorio' });
+        }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(contrasena, salt);
         const [result] = await pool.query(
-            'INSERT INTO Usuario (Nombre, Correo, Contrasena, Tipo_Usuario, Programa) VALUES (?, ?, ?, ?, ?)',
-            [nombre, correo, hashedPassword, tipo_usuario, programa]
+            'INSERT INTO Usuario (Nombre, Apellidos, Correo, Contrasena, Tipo_Usuario, Programa) VALUES (?, ?, ?, ?, ?, ?)',
+            [nombre, apellidos, correo, hashedPassword, tipo_usuario, programa]
         );
         res.status(201).json({ mensaje: 'Usuario registrado', id: result.insertId });
     } catch (error) {
@@ -26,7 +29,11 @@ export const login = async (req, res) => {
         const validPass = await bcrypt.compare(contrasena, rows[0].Contrasena);
         if (!validPass) return res.status(401).json({ error: 'Contraseña incorrecta' });
 
-        const token = jwt.sign({ id: rows[0].id_usuario }, process.env.JWT_SECRET, { expiresIn: '8h' });
+        const tokenPayload = {
+            id_usuario: rows[0].id_usuario,
+            tipo_usuario: rows[0].Tipo_Usuario
+        };
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '8h' });
         res.json({ token, usuario: { id: rows[0].id_usuario, nombre: rows[0].Nombre, rol: rows[0].Tipo_Usuario } });
     } catch (error) {
         res.status(500).json({ error: error.message });
