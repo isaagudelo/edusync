@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import axios from '../api/axios.js';
+import { monitorias } from '../services/api.service.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 const MisCitas = () => {
+    const { user } = useAuth();
     const [citas, setCitas] = useState([]);
-    const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         const fetchCitas = async () => {
-            const res = await axios.get(`/monitorias/estudiante/${user.id}`);
+            const res = await monitorias.getCitasEstudiante(user.id);
             setCitas(res.data);
         };
         fetchCitas();
@@ -15,7 +16,7 @@ const MisCitas = () => {
 
     const cancelarCita = async (id_monitoria) => {
         if(window.confirm("¿Seguro que deseas cancelar esta monitoría?")) {
-            await axios.delete(`/monitorias/cancelar/${id_monitoria}`);
+            await monitorias.cancelar(id_monitoria);
             setCitas(citas.filter(c => c.id_monitoria !== id_monitoria));
         }
     };

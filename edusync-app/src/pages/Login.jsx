@@ -1,56 +1,103 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from '../api/axios.js';
+import { auth } from '../services/api.service.js';
+import { useAuth } from '../hooks/useAuth.js';
 
-const Login = () => { // <--- 1. ASEGÚRATE DE QUE ESTO ESTÉ AQUÍ
-    const [formData, setFormData] = useState({ correo: '', contrasena: '' });
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+const Login = () => {
+  const [formData, setFormData] = useState({ correo: '', contrasena: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post('/auth/login', formData);
-            localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify(res.data.usuario));
-            navigate('/perfil');
-        } catch (err) {
-            setError(err.response?.data?.error || 'Error al iniciar sesión');
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    try {
+      const res = await auth.login(formData);
+      login(res.data.token, res.data.usuario);
+      navigate('/perfil');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return ( // <--- 2. EL RETURN DEBE ESTAR DENTRO DE LA FUNCIÓN
-        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-6">
-            <div className="w-full max-w-[440px] bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 p-10">
-                {/* ... todo el resto del código de estilo que pegamos antes ... */}
-                <img src="/logo.png" alt="Logo Edusync" className="text-3xl font-black text-slate-800 tracking-tight text-center mb-10" />
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <input
-                        type="email"
-                        placeholder="Correo UAM"
-                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 transition-all"
-                        onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 transition-all"
-                        onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
-                        required
-                    />
-                    <button className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:bg-blue-700 hover:-translate-y-1 transition-all mt-4">
-                        Acceder
-                    </button>
-                </form>
-
-                <p className="mt-8 text-center text-slate-500 text-sm">
-                    ¿No tienes cuenta? <Link to="/register" className="text-blue-600 font-bold hover:underline">Registrate aquí</Link>
-                </p>
-            </div>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <img src="/logo.png" alt="Edusync" className="h-16 w-16 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-slate-800">Iniciar Sesión</h1>
+          <p className="text-slate-600 mt-2">Bienvenido de nuevo a Edusync</p>
         </div>
-    );
-}; // <--- 3. NO OLVIDES CERRAR LA FUNCIÓN AQUÍ
+
+        <div className="card p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="label">Correo Institucional</label>
+              <input
+                type="email"
+                className="input"
+                placeholder="correo@universidad.edu"
+                value={formData.correo}
+                onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Contraseña</label>
+              <input
+                type="password"
+                className="input"
+                placeholder="Ingresa tu contraseña"
+                value={formData.contrasena}
+                onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="alert alert-error">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-primary w-full py-3"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Iniciando sesión...
+                </span>
+              ) : (
+                'Iniciar Sesión'
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-slate-600">
+              ¿No tienes cuenta?{' '}
+              <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-700">
+                Regístrate aquí
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Login;

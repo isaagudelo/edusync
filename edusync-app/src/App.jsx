@@ -1,35 +1,44 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Profile from './pages/Profile';
-import Agendar from './pages/Agendar';
-import MonitorAvailability from './pages/MonitorAvailability';
-import AdminMaterias from './pages/AdminMateria';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import Layout from "./components/Layout/Layout";
+import ProtectedRoute from "./pages/ProtectedRoute";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import AdminMaterias from "./pages/AdminMateria";
+import Monitorias from "./pages/Monitorias";
+import MisMonitorias from "./pages/MisMonitorias";
+import Historial from "./pages/Historial";
+import Notificaciones from "./pages/Notificaciones";
+import MonitorAvailability from "./pages/MonitorAvailability";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        {/* Rutas Públicas: NO llevan Navbar */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    return (
+        <Router>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
 
-        {/* Rutas Privadas: TODAS dentro del Layout para que tengan Navbar */}
-        <Route path="/" element={<Layout />}>
-          {/* Al entrar a la raíz, te manda al perfil */}
-          <Route index element={<Navigate to="/perfil" />} />
-          <Route path="/admin/materias" element={<AdminMaterias />} />
-          <Route path="perfil" element={<Profile />} />
-          <Route path="agendar" element={<Agendar />} />
-          <Route path="mis-horarios" element={<MonitorAvailability />} />
-        </Route>
+                    <Route path="/" element={<Layout />}>
+                        <Route index element={<Home />} />
+                        <Route path="perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                        <Route path="monitorias" element={<ProtectedRoute><Monitorias /></ProtectedRoute>} />
+                        <Route path="mis-monitorias" element={<ProtectedRoute><MisMonitorias /></ProtectedRoute>} />
+                        <Route path="historial" element={<ProtectedRoute><Historial /></ProtectedRoute>} />
+                        <Route path="notificaciones" element={<ProtectedRoute><Notificaciones /></ProtectedRoute>} />
+                        <Route path="disponibilidad" element={<ProtectedRoute><MonitorAvailability /></ProtectedRoute>} />
+                        <Route path="admin/materias" element={<ProtectedRoute><AdminMaterias /></ProtectedRoute>} />
+                        <Route path="admin/panel" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                    </Route>
 
-        {/* Ruta para capturar cualquier error 404 */}
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </Router>
-  );
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+            </AuthProvider>
+        </Router>
+    );
 }
 
 export default App;

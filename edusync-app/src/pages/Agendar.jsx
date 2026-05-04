@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import axios from '../api/axios.js';
+import { monitorias } from '../services/api.service.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 const Agendar = () => {
+    const { user } = useAuth();
     const [monitores, setMonitores] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchMonitores = async () => {
             try {
-                const res = await axios.get('/monitorias/disponibles');
+                const res = await monitorias.getDisponibles();
                 setMonitores(res.data);
             } catch (err) { console.error(err); }
             finally { setLoading(false); }
@@ -16,12 +18,12 @@ const Agendar = () => {
         fetchMonitores();
     }, []);
 
-    const handleAgendar = async (id_disponibilidad) => {
-        const user = JSON.parse(localStorage.getItem('user'));
+    const handleAgendar = async (id_disponibilidad, id_asignacion) => {
         try {
-            await axios.post('/monitorias/agendar', {
+            await monitorias.agendar({
                 id_estudiante: user.id,
-                id_disponibilidad
+                id_disponibilidad,
+                id_asignacion
             });
             alert("¡Monitoría agendada con éxito!");
             setMonitores(monitores.filter(m => m.id_disponibilidad !== id_disponibilidad));
@@ -56,7 +58,7 @@ const Agendar = () => {
                             </div>
 
                             <button
-                                onClick={() => handleAgendar(m.id_disponibilidad)}
+                                onClick={() => handleAgendar(m.id_disponibilidad, m.id_asignacion)}
                                 className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-all active:scale-95"
                             >
                                 Agendar Cupo

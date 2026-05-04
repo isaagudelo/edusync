@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import axios from '../api/axios';
+import { admin, monitorias } from '../services/api.service.js';
 
 const AdminMaterias = () => {
     const [materias, setMaterias] = useState([]);
-    const [nuevaMateria, setNuevaMateria] = useState({ nombre: '', descripcion: '' });
+    const [nuevaMateria, setNuevaMateria] = useState({ Nombre: '', Codigo: '' });
     const [status, setStatus] = useState('');
 
     useEffect(() => {
         const fetchMaterias = async () => {
-            const res = await axios.get('/monitorias/materias');
+            const res = await monitorias.getMaterias();
             setMaterias(res.data);
         };
         fetchMaterias();
@@ -17,11 +17,11 @@ const AdminMaterias = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/admin/materias', nuevaMateria);
+            await admin.createMateria(nuevaMateria);
             setStatus('✅ Materia creada con éxito');
-            setNuevaMateria({ nombre: '', descripcion: '' });
+            setNuevaMateria({ Nombre: '', Codigo: '' });
             // Recargar lista
-            const res = await axios.get('/monitorias/materias');
+            const res = await monitorias.getMaterias();
             setMaterias(res.data);
         } catch (err) {
             setStatus('❌ Error al crear materia');
@@ -41,15 +41,17 @@ const AdminMaterias = () => {
                             type="text"
                             placeholder="Nombre (ej: Física II)"
                             className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500"
-                            value={nuevaMateria.nombre}
-                            onChange={e => setNuevaMateria({ ...nuevaMateria, nombre: e.target.value })}
+                            value={nuevaMateria.Nombre}
+                            onChange={e => setNuevaMateria({ ...nuevaMateria, Nombre: e.target.value })}
                             required
                         />
-                        <textarea
-                            placeholder="Descripción breve"
+                        <input
+                            type="text"
+                            placeholder="Código (ej: FIS102)"
                             className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500"
-                            value={nuevaMateria.descripcion}
-                            onChange={e => setNuevaMateria({ ...nuevaMateria, descripcion: e.target.value })}
+                            value={nuevaMateria.Codigo}
+                            onChange={e => setNuevaMateria({ ...nuevaMateria, Codigo: e.target.value })}
+                            required
                         />
                         <button className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition">
                             Guardar Materia
@@ -67,7 +69,7 @@ const AdminMaterias = () => {
                                 <div className="h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center text-lg">📚</div>
                                 <div>
                                     <p className="font-bold text-slate-800">{m.Nombre}</p>
-                                    <p className="text-xs text-slate-400">{m.descripcion || 'Sin descripción'}</p>
+                                    <p className="text-xs text-slate-400">{m.Codigo}</p>
                                 </div>
                             </div>
                         ))}

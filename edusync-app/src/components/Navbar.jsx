@@ -1,4 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
+import { FaHistory } from 'react-icons/fa';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -18,7 +20,20 @@ const Navbar = () => {
 
             <div className="flex items-center gap-8">
                 <div className="hidden md:flex gap-6">
-                    <Link to="/agendar" className="text-sm font-bold text-slate-500 hover:text-blue-600 transition">Monitorías</Link>
+                    <Link to="/agendar" className="text-sm font-bold text-slate-500 hover:text-blue-600 transition flex items-center gap-1">
+                        <FaHistory className="text-xs" />
+                        Monitorías
+                    </Link>
+                    <Link to="/historial" className="text-sm font-bold text-slate-500 hover:text-blue-600 transition flex items-center gap-1">
+                        <FaHistory className="text-xs" />
+                        Historial
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <NotificationBell />
+                        <Link to="/notificaciones" className="text-sm font-bold text-slate-500 hover:text-blue-600 transition">
+                            Notificaciones
+                        </Link>
+                    </div>
                     {user?.rol === 'Monitor' && (
                         <Link to="/mis-horarios" className="text-sm font-bold text-slate-500 hover:text-blue-600 transition">Mi Disponibilidad</Link>
                     )}
